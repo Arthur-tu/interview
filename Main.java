@@ -1,22 +1,37 @@
-import Task1.Person;
-import Task3.Circle;
-import Task3.Square;
-import Task3.Triangle;
+import HW2.task1.Tread_task;
+import HW2.task2.Counter;
+
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
 
 public class Main {
+static Lock lock = new ReentrantLock();
 
-    public static void main(String[] args) {
-	    Person person = new Person.PersonBuilder("f1name", "f2name","f3name").
-                address("Malaya Bronnaya 1").
-                age(31).
-                country("Russia").
-                build();
+static class CounterTread extends Thread {
+    private Counter counter;
+    public CounterTread(Counter counter) {
+        this.counter = counter;
+    }
+    @Override
+    public void run() {
+        for (int i = 0; i < 100; i++) {
+            try {
+                lock.lock();
+                counter.increaseSum();
+            } finally {
+                lock.unlock();
+            }
+        }
+    }
+}
 
-        Circle circle = new Circle(5.0);
-        Square square = new Square(5.0);
-        Triangle triangle = new Triangle(5.0,5.0,5.0);
-        System.out.println("S circle = " + circle.getSquare());
-        System.out.println("S square = " + square.getSquare());
-        System.out.println("S triangle = " + triangle.getSquare());
+public static void main(String[] args) throws InterruptedException {
+        Counter counter = new Counter();
+        for (int i = 0; i < 100; i++) {
+            CounterTread counterTread = new CounterTread(counter);
+            counterTread.start();
+        }
+        Thread.sleep(1000);
+        System.out.println("Counter:" + counter.getSum());
     }
 }
